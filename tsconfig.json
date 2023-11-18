@@ -1,24 +1,16 @@
 {
     "compilerOptions": {
-        "lib": ["ESNext"],
-        "module": "esnext",
-        "target": "esnext",
-        "moduleResolution": "bundler",
-        "moduleDetection": "force",
+        "module": "commonjs",
+        "declaration": true,
+        "removeComments": true,
+        "emitDecoratorMetadata": true,
         "experimentalDecorators": true,
-        "allowImportingTsExtensions": true,
-        "noEmit": false,
-        "outDir": "./dist",
-        "composite": true,
-        "strict": true,
-        "downlevelIteration": true,
-        "skipLibCheck": true,
-        "jsx": "preserve",
         "allowSyntheticDefaultImports": true,
-        "forceConsistentCasingInFileNames": true,
-        "allowJs": true,
-        "types": [
-            "bun-types" // add Bun global
-        ]
+        "target": "ES2021",
+        "sourceMap": true,
+        "outDir": "./dist",
+        "baseUrl": "./",
+        "incremental": true,
+        "skipLibCheck": true
     }
 }
