@@ -7,7 +7,7 @@ type InjectableOptions = { type: LifeSpan };
 type InstanceType<T extends Constructor> = T extends new (...args: any[]) => infer R ? R : never;
 
 export class DependencyService {
-    public container: {
+    private container: {
         [name: string]: InstanceType<any>;
     } = {};
 
