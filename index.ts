@@ -6,10 +6,27 @@ type LifeSpan = 'transient' | 'singleton';
 type InjectableOptions = { type: LifeSpan };
 type InstanceType<T extends Constructor> = T extends new (...args: any[]) => infer R ? R : never;
 
-class DependencyService {
-    private container: {
-        [name: string]: any;
+export class DependencyService {
+    public container: {
+        [name: string]: InstanceType<any>;
     } = {};
+
+    register<T extends Constructor>(instance: InstanceType<T>) {
+        const injectable = Reflect.getMetadata('__injectable', instance.constructor);
+        if (!injectable) {
+            throw new Error(
+                `${instance.constructor.name} is not injectable. Add @Injectable() decorator to make the class injectable.`,
+            );
+        }
+
+        const lifespan: LifeSpan = Reflect.getMetadata('__lifespan', instance.constructor);
+        if (lifespan == 'transient') {
+            // No need to register transient deps
+            return;
+        }
+
+        this.container[instance.constructor.name] = instance;
+    }
 
     get<T extends Constructor>(target: T): InstanceType<T> {
         const injectable = Reflect.getMetadata('__injectable', target);
@@ -27,7 +44,7 @@ class DependencyService {
             return new target(...args) as InstanceType<T>;
         }
 
-        const record = this.container[target.name];
+        const record = this.container[target.name] as InstanceType<T>;
         if (record) {
             return record;
         }
@@ -38,39 +55,12 @@ class DependencyService {
 
         return instance;
     }
-
-    all() {
-        return this.container;
-    }
 }
 
-const dService = new DependencyService();
-
-const Injectable = (options: InjectableOptions = { type: 'singleton' }) => {
+export const Injectable = (options: InjectableOptions = { type: 'singleton' }) => {
     return <T extends Constructor>(target: T) => {
         Object.defineProperty(target, 'name', { value: uuid() });
         Reflect.defineMetadata('__injectable', true, target);
         Reflect.defineMetadata('__lifespan', options.type, target);
     };
 };
-
-@Injectable()
-class ServiceOne {
-    constructor() { }
-
-    getNumber() {
-        return 'Value from Service One';
-    }
-}
-
-@Injectable()
-class ServiceTwo {
-    constructor(private serviceOne: ServiceOne) { }
-
-    getNumber() {
-        return 'Value from Service Two' + '...' + this.serviceOne.getNumber();
-    }
-}
-
-const servTwo = dService.get(ServiceTwo);
-console.log(servTwo.getNumber());
